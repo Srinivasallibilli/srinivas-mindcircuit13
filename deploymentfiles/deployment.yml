@@ -15,9 +15,9 @@ spec:
       labels:
         app: mc-app
     spec:
-      containers:
+      containers: 
       - name: mc-app
-        image: devopshubg333/batch13:pythonapp
+        image: devopshubg333/batch13:mindcircuit13img  
         ports:
         - containerPort: 8080
 
