@@ -1,0 +1,86 @@
+  pipeline {
+    agent any
+	
+	     tools {
+	      maven 'maven3'
+		}
+		
+		stages {
+        stage('checkout') {
+            steps {
+                echo 'Cloning GIT HUB Repo'
+                git branch: 'main', url: 'https://github.com/Srinivasallibilli/srinivas-mindcircuit13.git'
+				
+            }
+        }
+		
+        stage('sonar') {
+            steps {
+                echo 'scanning project'
+				sh 'ls -ltr'
+				
+				
+				 sh ''' mvn sonar:sonar \\
+				        -Dsonar.host.url=http://54.81.216.218:9000/ \\
+						-Dsonar.login=squ_86957ac987180b91381d2ae228508747af1ad6d1'''
+            }
+        }
+        
+        
+        stage('build artifact') {
+            steps {
+                echo 'build artifact'
+				sh 'mvn clean package'
+            }
+        }
+        
+        
+        stage('Docker Image') {
+            steps {
+                echo 'Docker Image building'
+				sh 'docker build -t prameela7/batch13:${BUILD_NUMBER} .'
+				
+            }
+        }
+        
+        	stage('push to dockerhub'){
+		      steps {
+			   script {
+			   
+			    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+	             sh 'docker login -u prameela7 -p ${dockerhub}'
+			   }
+	             sh 'docker push prameela7/batch13:${BUILD_NUMBER}'
+	              echo 'Pushed to Dockerhub'
+			   }
+		      }
+		}
+		
+			
+  stage('Update Deployment File')
+		 {
+		 environment {
+		    GIT_REPO_NAME = "srinivas-mindcircuit13"
+			GIT_USER_NAME = "Srinivasallibilli"
+			}
+			
+			steps {
+			 echo 'update deployment file'
+			 withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
+			 
+			 sh ''' 
+			    git config user.email "srinivasallibilli96@gmail.com"
+				git config user.name "Srinivasallibilli"
+				BUILD_NUMBER=${BUILD_NUMBER}
+				sed -i "s/batch13:.*/batch13:${BUILD_NUMBER}/g" deploymentfile1/deployment.yml
+				git add .
+				
+				git commit -m "update deployment image to version ${BUILD_NUMBER}"
+				
+				git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+			'''
+			 }
+			}
+		 }
+    }
+}
