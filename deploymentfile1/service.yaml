@@ -1,15 +1,13 @@
-apiVersion: apps/v1
+apiVersion: v1
 kind: Service
 metadata:
-  name: mc-app
-  namespace: default  # Or your specific namespace
-  labels:
-    app: mc-app
+  name: mc-app-service
 spec:
-  type: ClusterIP  # Use LoadBalancer if you need external access
-  selector:
-    app: mc-app     # Must match the pod labels in your deployment
+  type: LoadBalancer
   ports:
-    - name: http
-      port: 80
-      targetPort: 8080  # Container port exposed in your deployment
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: mc-app
