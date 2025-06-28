@@ -1,1 +1,15 @@
-hii this my argocd page please have a look 
+apiVersion: apps/v1
+kind: Service
+metadata:
+  name: mc-app
+  namespace: default  # Or your specific namespace
+  labels:
+    app: mc-app
+spec:
+  type: ClusterIP  # Use LoadBalancer if you need external access
+  selector:
+    app: mc-app     # Must match the pod labels in your deployment
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080  # Container port exposed in your deployment
